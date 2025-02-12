@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Nomes</title>
+</head>
+<body>
+    <h1>Sorteador de Nomes</h1>
+    <input type="text" id="nome" placeholder="Digite um nome">
+    <button onclick="adicionarNome()">Adicionar</button>
+    <button onclick="sortearNome()">Sortear</button>
+    <button onclick="resetarSorteio()">Resetar Sorteio</button>
+    <h2 id="resultado"></h2>
+
+    <script>
+        function adicionarNome() {
+            let nome = document.getElementById("nome").value;
+            fetch("/adicionar", {
+                method: "POST",
+                body: new URLSearchParams({ nome: nome }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            }).then(res => res.json()).then(data => alert(data.mensagem));
+        }
+
+        function sortearNome() {
+            fetch("/sortear").then(res => res.json()).then(data => {
+                document.getElementById("resultado").innerText = data.nome || data.mensagem;
+            });
+        }
+
+        function resetarSorteio() {
+            fetch("/resetar", { method: "POST" })
+            .then(res => res.json()).then(data => alert(data.mensagem));
+        }
+    </script>
+</body>
+</html>
