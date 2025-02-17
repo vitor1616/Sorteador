@@ -27,9 +27,16 @@ def sortear():
 
 @app.route('/resetar', methods=['POST'])
 def resetar():
-    Nome.query.update({'sorteado': False})
+    db.session.query(Nome).delete()  # Apaga todos os registros
     db.session.commit()
-    return jsonify({'mensagem': 'Sorteio reiniciado!'})
+    return jsonify({'mensagem': 'Todos os nomes foram apagados!'})
+
+@app.route('/listar', methods=['GET'])
+def listar():
+    nomes = Nome.query.filter_by(sorteado=False).all()  # Pega apenas os não sorteados
+    nomes_lista = [nome.nome for nome in nomes]
+    return jsonify(nomes_lista)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -4,35 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorteador de Nomes</title>
+    <style>
+        /* Estilos gerais - Tema Dark */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Fundo escuro */
+            color: #ddd; /* Texto claro */
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #444;
+            border-radius: 5px;
+            width: 250px;
+            text-align: center;
+            background-color: #2c2c2c;
+            color: #ddd;
+        }
+
+        /* Botões */
+        button {
+            background-color: #008CFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #006FCC;
+        }
+
+        /* Resultado do sorteio */
+        #resultado {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #008CFF;
+        }
+
+        /* Lista de participantes */
+        h3 {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+
+        ul li {
+            background: #2c2c2c; /* Cinza escuro */
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+            color: #ddd;
+        }
+    </style>
 </head>
 <body>
     <h1>Sorteador de Nomes</h1>
+
     <input type="text" id="nome" placeholder="Digite um nome">
     <button onclick="adicionarNome()">Adicionar</button>
+    
     <button onclick="sortearNome()">Sortear</button>
     <button onclick="resetarSorteio()">Resetar Sorteio</button>
+
     <h2 id="resultado"></h2>
+    
+    <h3>Participantes:</h3>
+    <ul id="listaNomes"></ul>
 
     <script>
         function adicionarNome() {
-            let nome = document.getElementById("nome").value;
+            let nome = document.getElementById("nome").value.trim();
+            if (nome === "") return; // Se estiver vazio, não faz nada
+            
             fetch("/adicionar", {
                 method: "POST",
                 body: new URLSearchParams({ nome: nome }),
                 headers: { "Content-Type": "application/x-www-form-urlencoded" }
-            }).then(res => res.json()).then(data => alert(data.mensagem));
+            }).then(res => res.json()).then(() => {
+                document.getElementById("nome").value = ""; // Limpa o campo
+                atualizarLista(); // Atualiza automaticamente a lista
+            });
         }
 
         function sortearNome() {
             fetch("/sortear").then(res => res.json()).then(data => {
                 document.getElementById("resultado").innerText = data.nome || data.mensagem;
+                atualizarLista(); // Atualiza a lista após o sorteio
             });
         }
 
         function resetarSorteio() {
             fetch("/resetar", { method: "POST" })
-            .then(res => res.json()).then(data => alert(data.mensagem));
+            .then(res => res.json()).then(() => {
+                document.getElementById("resultado").innerText = "";
+                atualizarLista(); // Atualiza a lista após resetar
+            });
         }
+
+        function atualizarLista() {
+            fetch("/listar")
+            .then(res => res.json())
+            .then(data => {
+                let lista = document.getElementById("listaNomes");
+                lista.innerHTML = "";  // Limpa a lista antes de adicionar os novos nomes
+                data.forEach(nome => {
+                    let item = document.createElement("li");
+                    item.innerText = nome;
+                    lista.appendChild(item);
+                });
+            });
+        }
+
+        // Atualiza a lista ao carregar a página
+        window.onload = atualizarLista;
     </script>
 </body>
 </html>
